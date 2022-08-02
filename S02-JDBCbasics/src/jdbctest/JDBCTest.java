@@ -11,7 +11,20 @@ public static void main(String[] args) {
          readfromDB();
 		//insertIntoDB();
 		//updateIntoDB();
+         //delFromDB();
 	}
+
+private static void delFromDB() {
+	try(Connection connection = DriverManager.getConnection("jdbc:mysql://localhost/mydb", "root", "admin");
+			Statement	statement = connection.createStatement();) {
+		int rowsUpdated = statement.executeUpdate("delete from account where accno=3;");
+		System.out.println("Number of rows Updated: "+rowsUpdated);
+	} catch (SQLException e) {
+		e.printStackTrace();
+	} 
+}
+
+
 private static void updateIntoDB() {
 	// TODO Auto-generated method stub
 	try(Connection connection = DriverManager.getConnection("jdbc:mysql://localhost/mydb", "root", "admin");
