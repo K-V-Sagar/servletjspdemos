@@ -3,10 +3,10 @@ package examples;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import jakarta.servlet.GenericServlet;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
+import javax.servlet.GenericServlet;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 
 public class AdditionServlet extends GenericServlet{
 
@@ -19,6 +19,10 @@ public class AdditionServlet extends GenericServlet{
 		res.setContentType("text/html");
 		PrintWriter out = res.getWriter();
 		out.println("<h3>Result = " + result + "</h3>");
+		int x=1, y=1;
+		if(x == y) {
+			out.println("<h4>YAY!!</h4>");
+		}
 		
 	}
 
