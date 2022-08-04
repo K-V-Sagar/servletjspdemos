@@ -4,15 +4,22 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+//**pre init is shown below
+//@WebServlet(urlPatterns="/adduserServlet", loadOnStrap=1)
+
+// below is lazy init
 @WebServlet("/adduserServlet")
 public class addUserServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -21,15 +28,22 @@ public class addUserServlet extends HttpServlet {
 
 	//init() is a life cycle method
 	@Override
-	public void init() throws ServletException {
+	public void init(ServletConfig config) throws ServletException {
 
 		try {
+			ServletContext context = config.getServletContext();
+			
 			System.out.println("AddUserSevlet.init() method. DB connection created");
 			Class.forName("com.mysql.jdbc.Driver"); // loads the driver
+			
 			// DriverManager.getConnection("jdbc:mysql://localhost/mydb", "root", "admin")
 			// above statement connects to the mydb schema created 
-			// root is userID and admin is password
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/mydb", "root", "admin");
+			// root is userID and admin is password		
+			
+			// this method allows easy implementation of changes
+			// in case of change in password, all Servlets will be updated automatically
+			connection = DriverManager.getConnection(context.getInitParameter("dburl"),
+					context.getInitParameter("dbuser"), context.getInitParameter("dbpassword"));
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} catch (SQLException e) {
@@ -49,11 +63,14 @@ public class addUserServlet extends HttpServlet {
 		String password = request.getParameter("password");
 		
 
-		try (Statement statement = connection.createStatement();) {
+		try (PreparedStatement statement = connection.prepareStatement("insert into user values (?,?,?,?)");) {
 
-			String query = "insert into user values('" + firstname + "', '" + lastname + "', '" + email + "', '" + password  + "')";
-			System.out.println("Query being executed: " + query);
-			int rowsInserted = statement.executeUpdate(query);
+			statement.setString(1, firstname);
+			statement.setString(2, lastname);
+			statement.setString(3, email);
+			statement.setString(4, password);
+			
+			int rowsInserted = statement.executeUpdate();
 			System.out.println("Number of rows inserted: " + rowsInserted);
 			
 			

@@ -4,9 +4,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -23,12 +26,16 @@ public class updateUserServlet extends HttpServlet {
 	Connection connection;
 	
 	@Override
-	public void init() throws ServletException {
+	public void init(ServletConfig config) throws ServletException {
 
 		try {
+			
+			ServletContext context = config.getServletContext();
+			
 			System.out.println("AddUserSevlet.init() method. DB connection created");
 			Class.forName("com.mysql.jdbc.Driver");
-			connection = DriverManager.getConnection("jdbc:mysql://localhost/mydb", "root", "admin");
+			connection = DriverManager.getConnection(context.getInitParameter("dburl"),
+					context.getInitParameter("dbuser"), context.getInitParameter("dbpassword"));
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} catch (SQLException e) {
@@ -43,11 +50,12 @@ public class updateUserServlet extends HttpServlet {
 		String email = request.getParameter("email");
 		String password = request.getParameter("password");
 		
-		try(Statement statement = connection.createStatement();){
+		try(PreparedStatement statement = connection.prepareStatement("update user set password = ? where email = ?")){
 			
-			String query = "update user set password='" + password + "' where email = '" + email + "'";
-			System.out.println("Query being executed: " + query);
-			int rowsUpdated = statement.executeUpdate(query);
+			statement.setString(1, password);
+			statement.setString(2, email);
+			
+			int rowsUpdated = statement.executeUpdate();
 			System.out.println("Number of rows Update: " + rowsUpdated);
 
 			PrintWriter pw = response.getWriter();
